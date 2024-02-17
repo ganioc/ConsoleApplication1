@@ -6,6 +6,7 @@
 #pragma comment (lib , "Shlwapi.lib")
 
 #include <benchmark/benchmark.h>
+#include <stdlib.h>
 
 namespace bm = benchmark;
 
@@ -16,7 +17,49 @@ static void i32_addition(bm::State& state) {
 	}
 }
 
+static void BM_malloc(benchmark::State& state) {
+	constexpr size_t size = 1024;
+	for (auto _ : state) {
+		void* p = malloc(size);
+		benchmark::DoNotOptimize(p);
+		free(p);
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+
+static void BM_increment(benchmark::State& state) {
+	size_t i = 0;
+	for (auto _ : state) {
+		++i;
+		benchmark::DoNotOptimize(i);
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+
 BENCHMARK(i32_addition);
+BENCHMARK(BM_malloc);
+BENCHMARK(BM_increment);
+
+#define REPEAT2(x) x x
+#define REPEAT4(x) REPEAT2(x) REPEAT2(x)
+#define REPEAT8(x) REPEAT4(x) REPEAT4(x)
+#define REPEAT16(x) REPEAT8(x) REPEAT8(x)
+#define REPEAT32(x) REPEAT16(x) REPEAT16(x)
+
+#define REPEAT(x)  REPEAT32(x)
+
+static void BM_increment32(benchmark::State& state) {
+	size_t i = 0;
+	for (auto _ : state) {
+		REPEAT(
+			++i;
+		benchmark::DoNotOptimize(i);
+		);
+	}
+	state.SetItemsProcessed(32 * state.iterations());
+}
+BENCHMARK(BM_increment32);
+
 
 BENCHMARK_MAIN();
 
@@ -25,13 +68,3 @@ BENCHMARK_MAIN();
 //    std::cout << "Hello Benchmark!\n";
 //}
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
