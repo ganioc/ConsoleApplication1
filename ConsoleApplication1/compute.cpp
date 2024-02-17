@@ -2,5 +2,5 @@
 
 int add_two(int num)
 {
-	return num + 23;
+	return num + 2;
 }

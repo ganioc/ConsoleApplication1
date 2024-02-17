@@ -24,6 +24,9 @@
     <ClCompile Include="tutorial.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="benchmark.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="compute.h">
@@ -32,5 +35,9 @@
     <ClInclude Include="tutorial.h">
       <Filter>头文件</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\..\..\..\..\..\Program Files (x86)\benchmark\lib\benchmark.lib" />
+    <Library Include="..\..\..\..\..\..\Program Files (x86)\benchmark\lib\benchmark_main.lib" />
   </ItemGroup>
 </Project>
