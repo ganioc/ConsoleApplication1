@@ -16,6 +16,12 @@ int main()
     g(13);
     tutorial::doSomeWork();
 
+    tutorial::testTemplate();
+
+    tutorial::testPrototype();
+
+    tutorial::testSingleton();
+
     return 0;
 }
 
