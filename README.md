@@ -5,6 +5,17 @@
 #### execute around design pattern
 RAII, (Resource Acquisition Is Initialization)
 
+```cpp
+std::lock_guard
+std::unique_ptr
+
+```
+
+#### Type Erasure
+? ’‚ « ≤√¥ƒÿ?
+
+
+
 ### tests
 
 microbenchmark library
