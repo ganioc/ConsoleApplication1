@@ -7,8 +7,32 @@
 
 #include <benchmark/benchmark.h>
 #include <stdlib.h>
+#include <memory>
 
 namespace bm = benchmark;
+
+template <typename T>
+class scoped_ptr {
+public:
+	explicit scoped_ptr(T* p) : p_(p) {}
+	~scoped_ptr() {
+		delete p_;
+	}
+	T* operator->() {
+		return p_;
+	}
+	const T* operator->() const {
+		return p_;
+	}
+	T& operator*() {
+		return *p_;
+	}
+	const T& operator*() const {
+		return *p_;
+	}
+private:
+	T* p_;
+};
 
 static void i32_addition(bm::State& state) {
 	int32_t a = 110, b = 30, c;
@@ -60,6 +84,31 @@ static void BM_increment32(benchmark::State& state) {
 }
 BENCHMARK(BM_increment32);
 
+static void BM_rawprt_dereference(benchmark::State& state) {
+	int* p = new int;
+	for (auto _ : state) {
+		REPEAT(benchmark::DoNotOptimize(*p););
+	}
+	delete p;
+	state.SetItemsProcessed(32 * state.iterations());
+}
+static void BM_scoped_ptr_deference(benchmark::State& state) {
+	scoped_ptr<int> p(new int);
+	for (auto _ : state) {
+		REPEAT(benchmark::DoNotOptimize(*p);)
+	}
+	state.SetItemsProcessed(32 * state.iterations());
+}
+static void BM_unique_ptr_deference(benchmark::State& state) {
+	std::unique_ptr<int> p(new int);
+	for (auto _ : state) {
+		REPEAT(benchmark::DoNotOptimize(*p);)
+	}
+	state.SetItemsProcessed(32 * state.iterations());
+}
+BENCHMARK(BM_rawprt_dereference);
+BENCHMARK(BM_scoped_ptr_deference);
+BENCHMARK(BM_unique_ptr_deference);
 
 BENCHMARK_MAIN();
 
