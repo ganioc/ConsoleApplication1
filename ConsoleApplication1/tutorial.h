@@ -104,4 +104,37 @@ namespace tutorial {
 
 	void testFunction();
 
+	// type erasure using inheritance
+	template<typename T>
+	class smartptr
+	{
+	public:
+		template<typename Deleter>
+		smartptr(T* p, Deleter d) : p_(p), d_(new destroy<Deleter>(d)) {}
+		~smartptr() {
+			(*d_)(p_);
+			delete d_;
+		}
+		T* operator->() {
+			return p_;
+		}
+
+	private:
+		struct destroy_base {
+			virtual void operator()(void*) = 0;
+			virtual ~destroy_base() {}
+		};
+		template<typename Deleter>
+		struct destroy : public destroy_base {
+			destroy(Deleter d) : d_(d) {}
+			void operator()(void* p) override {
+				d_(static_cast<T*>(p));
+			}
+			Deleter d_;
+		};
+
+		T* p_;
+		destroy_base* d_;
+	};
+
 }
