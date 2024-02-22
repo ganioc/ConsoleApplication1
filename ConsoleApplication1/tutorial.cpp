@@ -69,4 +69,22 @@ namespace tutorial {
 		Single* s = Single::getInstance();
 		delete s;
 	}
+
+	// test Function
+	size_t f1(const std::string& s) { return s.capacity(); }
+	void testFunction() {
+		std::function<size_t(const std::string&)> f;
+
+		f = f1;
+		std::cout << f("cabcde") << "\n";
+
+		char c = 'b';
+		f = [=](const std::string& s) { return s.find(c); };
+		std::cout << f("cabcde") << "\n";
+
+		f = &std::string::size;
+		std::cout << f("cabcde") << "\n";
+
+
+	}
 }

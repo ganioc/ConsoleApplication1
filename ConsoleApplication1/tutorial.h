@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <functional>
 
 namespace tutorial {
 	struct G
@@ -100,5 +101,7 @@ namespace tutorial {
 		static Single* instance_;
 	};
 	void testSingleton();
+
+	void testFunction();
 
 }

@@ -24,6 +24,8 @@ int main()
 
     tutorial::testSingleton();
 
+    tutorial::testFunction();
+
     return 0;
 }
 
