@@ -137,4 +137,109 @@ namespace tutorial {
 		destroy_base* d_;
 	};
 
+	template<typename T>
+	class smartptr2 {
+	public:
+		template<typename Deleter> 
+		smartptr2(T* p, Deleter d) : p_(p) {
+			static_assert(sizeof(Deleter) <= sizeof(buf_));
+			::new(static_cast<void*>(buf_)) destroy<Deleter>(d) ;
+		}
+		~smartptr2() {
+			destroy* d = (destroy*)buf_;
+			(*d)(p_);
+			d->~destroy_base();
+		}
+	private:
+		struct destroy_base {
+			virtual void operator()(void*) = 0;
+			virtual ~destroy_base() {}
+		};
+		template<typename Deleter>
+		struct destroy : public destroy_base {
+			destroy(Deleter d) : d_(d) {}
+			void operator()(void* p) override {
+				d_(static_cast<T*>(p));
+			}
+			Deleter d_;
+		};
+
+		T* p_;
+		alignas(8) char buf_[16];
+
+	};
+
+	template<typename T>
+	class smartptr_te_static {
+		T* p_;
+		using destroy_t = void(*)(T*, void*);
+		destroy_t destroy_;
+		alignas(8) char buf_[8];
+
+		template<typename Deleter>
+		static void invoke_destroy(T* p, void* d) {
+			(*static_cast<Deleter*> (d))(p);
+		}
+	public:
+		template<typename Deleter>
+		smartptr_te_static(T* p, Deleter d) :p_(p), destroy_(invoke_destroy<Deleter>) {
+			static_assert(sizeof(Deleter) <= sizeof(buf_));
+			::new(static_cast<void*>(buf_)) Deleter(d);
+		}
+		~smartptr_te_static() {
+			this->destroy_(p_, buf_);
+		}
+		T* operator-> () {
+			return p_; 
+		}
+		const T* operator->() const {
+			return p_;
+		}
+	};
+
+	template<typename T>
+	class smartptr_te_vtable {
+		T* p_;
+		struct vtable_t {
+			using destroy_t = void(*)(T*, void*);
+			using destructor_t = void(*)(void*);
+			destroy_t destroy_;
+			destructor_t destructor_;
+		};
+		const vtable_t* vtable_ = nullptr;
+
+		template<typename Deleter>
+		constexpr static vtable_t vtable = {
+			smartptr_te_vtable::template destroy<Deleter>,
+			smartptr_te_vtable::template destructor<Deleter>
+		};
+
+		template<typename Deleter>
+		static void destroy(T* p, void* d) {
+			(*static_cast<Deleter*>(d))(p);
+		}
+
+		template<typename Deleter>
+		static void destructor(void* d) {
+			static_cast<Deleter*>(d)->~Deleter();
+		}
+
+		alignas(8) char buf_[8];
+	public:
+		template<typename Deleter>
+		smartptr_te_vtable(T* p, Deleter d) :p_(p), vtable_(&vtable<Deleter>) {
+			static_assert(sizeof(Deleter) <= sizeof(buf_));
+			::new(static_cast<void*>(buf_)) Deleter(d);
+		}
+		~smartptr_te_vtable() {
+			this->vtable_->destroy_(p_, buf_);
+			this->vtable_->destructor_(buf_);
+		}
+		T* operator->() {
+			return p_;
+		}
+		const T* operator->() const {
+			return p_;
+		}
+	};
 }
