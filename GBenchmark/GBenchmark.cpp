@@ -110,6 +110,27 @@ BENCHMARK(BM_rawprt_dereference);
 BENCHMARK(BM_scoped_ptr_deference);
 BENCHMARK(BM_unique_ptr_deference);
 
+struct deleter {
+	template<typename T>
+	void operator()(T* p) {
+		delete p;
+	}
+};
+deleter d;
+int* get_raw_ptr() {
+	return new int(0);
+}
+void BM_rawptr(benchmark::State& state) {
+	for (auto _ : state) {
+		int* p = get_raw_ptr();
+		// new int(0);
+		d(p);
+	}
+	state.SetItemsProcessed(state.iterations());
+}
+
+BENCHMARK(BM_rawptr);
+
 BENCHMARK_MAIN();
 
 //int main()
