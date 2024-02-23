@@ -128,8 +128,17 @@ void BM_rawptr(benchmark::State& state) {
 	}
 	state.SetItemsProcessed(state.iterations());
 }
-
+auto get_unique_ptr() {
+	return std::unique_ptr<int, deleter>(new int(0), d);
+}
+static void BM_uniqueptr(benchmark::State& state) {
+	for (auto _ : state) {
+		auto p(get_unique_ptr());
+	}
+	state.SetItemsProcessed(state.iterations());
+}
 BENCHMARK(BM_rawptr);
+BENCHMARK(BM_uniqueptr);
 
 BENCHMARK_MAIN();
 
