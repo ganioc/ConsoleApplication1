@@ -20,7 +20,12 @@ alignas() // 更改内存的对齐方式
 ```
 
 #### SFINAE
+overload function, 函数的重载,
 
+#### ScopeGuard
+error-safe, exception-safe code, RAII make error handling easire,
+错误处理, 
+高级c++语言特性。
 
 
 ### tests
