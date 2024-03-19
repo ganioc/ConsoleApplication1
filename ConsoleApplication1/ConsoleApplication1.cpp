@@ -12,7 +12,7 @@ int main()
 {
     std::cout << "Hello World!\n";
 
-    std::cout << "add_two(): " << add_two(10) << std::endl;
+    std::cout << "add_two(): " << compute::add_two(10) << std::endl;
 
     tutorial::G g;
     g(13);

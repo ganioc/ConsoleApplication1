@@ -1,4 +1,7 @@
 #pragma once
 
-int add_two(int num);
+namespace compute {
+	int add_two(int num);
+}
+
 

@@ -34,6 +34,9 @@ microbenchmark library
 
 - Google Benchmark library, works fine.
 
+### compute
+Use this namespace to write DSP code.
+
 
 
 

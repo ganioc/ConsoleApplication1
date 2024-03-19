@@ -49,7 +49,7 @@ namespace UnitTest1
 	public:
 		TEST_METHOD(TESTAddTwo)
 		{
-			Assert::AreEqual(add_two(10), 12);
+			Assert::AreEqual(compute::add_two(10), 12);
 		}
 		TEST_METHOD(TESTVector) {
 			std::vector<int> v(10);
