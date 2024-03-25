@@ -26,6 +26,8 @@ int main()
 
     tutorial::testFunction();
 
+    compute::testGetInput();
+
     return 0;
 }
 
