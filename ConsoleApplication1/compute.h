@@ -23,6 +23,15 @@ namespace compute {
 			return "DSP params exception";
 		}
 	};
+	class DSPException : public exception {
+	private:
+		string msg;
+	public:
+		DSPException(const char* str) :msg(string(str)) {}
+		virtual const char* what() const throw() {
+			return msg.c_str();
+		}
+	};
 
 	//
 	// getInput
@@ -111,6 +120,7 @@ namespace compute {
 
 		// Clear data
 		void empty();
+
 	
 	public:
 		DSPFile();

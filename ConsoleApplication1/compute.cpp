@@ -86,4 +86,12 @@ namespace compute {
 		fs.close();
 		return true;
 	}
+
+	//
+	void DSPFile::openWrite(const char* name) {
+		// Validate filename
+		if (name == NULL) {
+			throw DSPException("No file name");
+		}
+	}
 }
