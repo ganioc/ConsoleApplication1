@@ -93,5 +93,25 @@ namespace compute {
 		if (name == NULL) {
 			throw DSPException("No file name");
 		}
+
+		// Check the state of the file
+		if (m_fs.is_open()) {
+			throw DSPException("Already opened");
+		}
+
+		// Clear existing data
+		empty();
+
+		// Create a new DSP File
+		m_fs.open(name, ios::out | ios::trunc | ios::binary);
+		if (m_fs.fail()) {
+			throw DSPException("Cannot open for writing");
+		}
+
+		// Write blank header from DSPFile structure
+		if (m_recLen > USHRT_MAX) {
+			// Must write vector out as a LONG_VECTOR (32-bits)
+			unsigned char type = m_type | LONG_VECTOR;
+		}
 	}
 }
