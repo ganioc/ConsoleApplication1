@@ -72,21 +72,21 @@ namespace compute {
 
 	void testGetInput();
 
-
-	enum class DSPFILETYPE {
-		UNSIGNED_CHAR = 0,  // 0
-		UNSIGNED_SHORT = 1, // 1
-		UNSIGNED_LONG,  // 2
-		FLOAT,          // 3
-		SIGNED_CHAR,    // 4
-		SIGNED_SHORT,   // 5
-		SIGNED_LONG,    // 6
-		DOUBLE,         // 7
-		UNSIGNED_INT,   // 8
-		SIGNED_INT,     // 9
-		COMPLEX,        // 10
-		UNKNOWN_TYPE = 0xFF
-	};
+	typedef unsigned char BYTE;
+	typedef unsigned char DSPFILETYPE;
+	const DSPFILETYPE	UNSIGNED_CHAR = 0;  // 0
+	const DSPFILETYPE		UNSIGNED_SHORT = 1; // 1
+	const DSPFILETYPE		UNSIGNED_LONG = 2;  // 2
+	const DSPFILETYPE		FLOAT = 3;          // 3
+	const DSPFILETYPE		SIGNED_CHAR = 4;    // 4
+	const DSPFILETYPE		SIGNED_SHORT = 5;   // 5
+	const DSPFILETYPE		SIGNED_LONG = 6;    // 6
+	const DSPFILETYPE		DOUBLE = 7;         // 7
+	const DSPFILETYPE		UNSIGNED_INT = 8;   // 8
+	const DSPFILETYPE		SIGNED_INT = 9;     // 9
+	const DSPFILETYPE		COMPLEX = 10;        // 10
+	const DSPFILETYPE		LONG_VECTOR = 128;
+	const DSPFILETYPE		UNKNOWN_TYPE = 0xFF;
 
 	// DSPFile
 	class DSPFile {
@@ -121,7 +121,7 @@ namespace compute {
 		// Clear data
 		void empty();
 
-	
+
 	public:
 		DSPFile();
 		~DSPFile();

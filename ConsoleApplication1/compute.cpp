@@ -41,7 +41,7 @@ namespace compute {
 	}
 
 	// class DSPFile
-	DSPFile::DSPFile() : m_type( DSPFILETYPE::UNKNOWN_TYPE),
+	DSPFile::DSPFile() : m_type( UNKNOWN_TYPE),
 		m_elementSize(0),
 		m_numRecords(0),
 		m_recLen(0),
@@ -56,7 +56,7 @@ namespace compute {
 		empty();
 	}
 	void DSPFile::empty() {
-		m_type = DSPFILETYPE::UNKNOWN_TYPE;
+		m_type = UNKNOWN_TYPE;
 		m_elementSize = 0;
 		m_numRecords = 0;
 		m_recLen = 0;
@@ -111,7 +111,136 @@ namespace compute {
 		// Write blank header from DSPFile structure
 		if (m_recLen > USHRT_MAX) {
 			// Must write vector out as a LONG_VECTOR (32-bits)
-			unsigned char type = m_type | LONG_VECTOR;
+			unsigned char type = (m_type | LONG_VECTOR);
+
+			// Write out header
+			m_fs.write((const char*)&type, sizeof(type));
+			m_fs.write((const char*)&m_elementSize, sizeof(m_elementSize));
+
+			// The m_numRecords field is combined with the m_numRecords
+			// field as a 32-bit integer
+			m_fs.write((const char*)&m_recLen, sizeof(m_recLen));
+
+		}
+		else {
+			// Write out header
+			m_fs.write((const char*)&m_type, sizeof(m_type));
+			m_fs.write((const char*)&m_elementSize, sizeof(m_elementSize));
+
+			// Two unsigned shorts specify the number
+			// of records and the record length
+			unsigned short s = m_numRecords;
+			m_fs.write((const char*)&s, sizeof(s));
+			s = m_recLen;
+			m_fs.write((const char*)&s, sizeof(s));
+		}
+
+		if (m_fs.fail()) {
+			throw DSPException("Writing header");
+		}
+
+		// Begin data here
+		m_posBeginData = m_fs.tellp();
+
+		// File creation succeeded
+		m_readOnly = false;
+	}
+
+	void DSPFile::close() {
+		if (m_fs.is_open() == false) {
+			return;
+		}
+		if (m_readOnly == false && m_elementSize != 0) {
+			if (m_recLen == 0) {
+				// File created sequentially by writeElement
+				m_numRecords = 1;
+
+				// seek to the end of data
+				m_fs.seekp(0L, ios::end);
+
+				// Get current position
+				m_recLen = (int)((m_fs.tellp() - m_posBeginData) / m_elementSize);
+			}
+
+			// Seek to the beginning of the header
+			m_fs.seekp(0L, ios::end);
+
+			// Update LONG_VECTOR when writing header
+			if (m_recLen > USHRT_MAX) {
+				// File format doesn't support matrices larger than 65355x65355
+				if (m_numRecords != 1) {
+					m_fs.close();
+					throw DSPException("Matrix too large for file format");
+				}
+				// LONG_VECTOR
+				BYTE type = m_type | LONG_VECTOR;
+
+				// Write out header
+				m_fs.write((const char*)&type, sizeof(type));
+				m_fs.write((const char*)&m_elementSize, sizeof(m_elementSize));
+
+				// The m_numRecords field is combined with the m_numRecords field
+				// as an 32-bit integer
+				m_fs.write((const char*)&m_recLen, sizeof(m_recLen));
+			}
+			else {
+				// Write out header
+				m_fs.write((const char*)&m_type, sizeof(m_type));
+				m_fs.write((const char*)&m_elementSize, sizeof(m_elementSize));
+
+				// Two unsigned shorts specify the number of recordsand the 
+				// record length
+				unsigned short s = m_numRecords;
+				m_fs.write((const char*)&s, sizeof(s));
+				s = m_recLen;
+				m_fs.write((const char*)&s, sizeof(s));
+
+			}
+			if (m_fs.fail()) {
+				m_fs.close();
+				throw DSPException("Writing header");
+			}
+			// Write out trailer
+			if (m_trailer != NULL) {
+				streampos posTrailer = m_elementSize * m_numRecords * m_recLen;
+				m_fs.seekp(posTrailer, ios::cur);
+				m_fs.write(m_trailer, strlen(m_trailer) + 1);
+				if (m_fs.fail()) {
+					m_fs.close();
+					throw DSPException("Writing trailer");
+				}
+			}
+		}
+		m_fs.close();
+		empty();
+	}
+
+	void DSPFile::openRead(const char* name) {
+		// validate filename
+		if (name == NULL) {
+			throw DSPException("No file name");
+		}
+		// Check state of file
+		if (m_fs.is_open()) {
+			throw DSPException("Already opened");
+		}
+
+		// Clear existing data
+		empty();
+
+		// Try to open the file but do not create it
+		m_fs.open(name, ios::in | ios::binary | ios::_Nocreate);
+		if (m_fs.fail()) {
+			throw DSPException("Cannot open for reading");
+		}
+
+		// File exists -- read information into DSPFile structure
+		m_fs.read((const char*)&m_type, sizeof(m_type));
+		m_fs.read((const char*)&m_elementSize, sizeof(m_elementSize));
+
+		// Check for long vector type
+		if (m_type & LONG_VECTOR) {
+
 		}
 	}
 }
