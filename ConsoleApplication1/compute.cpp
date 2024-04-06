@@ -235,8 +235,8 @@ namespace compute {
 		}
 
 		// File exists -- read information into DSPFile structure
-		m_fs.read((const char*)&m_type, sizeof(m_type));
-		m_fs.read((const char*)&m_elementSize, sizeof(m_elementSize));
+		m_fs.read((char*)&m_type, sizeof(m_type));
+		m_fs.read((char*)&m_elementSize, sizeof(m_elementSize));
 
 		// Check for long vector type
 		if (m_type & LONG_VECTOR) {
