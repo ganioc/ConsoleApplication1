@@ -23,6 +23,12 @@ namespace compute {
 			return "DSP params exception";
 		}
 	};
+	class DSPMemoryException : public exception {
+	public:
+		virtual const char* what() const throw() {
+			return "DSP memory exception";
+		}
+	};
 	class DSPException : public exception {
 	private:
 		string msg;
@@ -72,8 +78,8 @@ namespace compute {
 
 	void testGetInput();
 
-	typedef unsigned char BYTE;
-	typedef unsigned char DSPFILETYPE;
+	using BYTE = unsigned char ;
+	using DSPFILETYPE = unsigned char ;
 	const DSPFILETYPE	UNSIGNED_CHAR = 0;  // 0
 	const DSPFILETYPE		UNSIGNED_SHORT = 1; // 1
 	const DSPFILETYPE		UNSIGNED_LONG = 2;  // 2

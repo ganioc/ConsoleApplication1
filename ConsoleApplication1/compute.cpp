@@ -202,7 +202,7 @@ namespace compute {
 			}
 			// Write out trailer
 			if (m_trailer != NULL) {
-				streampos posTrailer = m_elementSize * m_numRecords * m_recLen;
+				streampos posTrailer = m_elementSize *( m_numRecords * m_recLen);
 				m_fs.seekp(posTrailer, ios::cur);
 				m_fs.write(m_trailer, strlen(m_trailer) + 1);
 				if (m_fs.fail()) {
@@ -240,7 +240,71 @@ namespace compute {
 
 		// Check for long vector type
 		if (m_type & LONG_VECTOR) {
-
+			// The m_numRecords field is combined with the 
+			// m_numRecords field as a 32-bit integer
+			m_numRecords = 1;
+			m_fs.read((char*)&m_recLen, sizeof(m_recLen));
+			// Mask out LONG_VECTOR bit
+			m_type &= ~LONG_VECTOR;
 		}
+		else {
+			// Two unsigned shorts specify the number
+			// of records and the record length
+			unsigned short s;
+			m_fs.read((char*)&s, sizeof(s));
+			m_numRecords = s;
+			m_fs.read((char*)&s, sizeof(s));
+			m_recLen = s;
+		}
+
+		if (m_fs.fail()) {
+			throw DSPException("Reading header");
+		}
+
+		// Skip over binary data to get trailer size
+		m_posBeginData = m_fs.tellg();
+		m_fs.seekg(0L, ios::end);
+		streampos posEndTrailer = m_fs.tellg();
+
+		// Subtract data size to get trailer length
+		streamoff dataSize = m_elementSize * m_numRecords * m_recLen;
+
+		// Validate header
+		if (dataSize > posEndTrailer - m_posBeginData) {
+			throw DSPException("Invalid header");
+		}
+
+		streamoff trailerSize = posEndTrailer - m_posBeginData - dataSize;
+
+		// Allocate trailer
+		if (trailerSize != 0L) {
+			// Seek to beginning of trailer from end of file
+			m_fs.seekg(-trailerSize, ios::end);
+
+			// Allocate trailer
+			m_trailer = new char[trailerSize + 1];
+			if (m_trailer == NULL) {
+				throw DSPMemoryException();
+			}
+
+			// Read trailer
+			m_fs.read(m_trailer, trailerSize);
+			if (m_fs.fail()) {
+				throw DSPException("Reading trailer");
+			}
+
+			// Make sure that string terminates
+			m_trailer[trailerSize] = 0;
+		}
+
+		// Allocate buffer for readElement
+		m_singleElement = new BYTE[m_elementSize];
+		if (m_singleElement == NULL) {
+			throw DSPMemoryException();
+		}
+
+		// Place pointer at beginning of data
+		seek();
+		m_readOnly = true;
 	}
 }
