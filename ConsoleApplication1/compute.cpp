@@ -339,5 +339,67 @@ namespace compute {
 		// Convert it to type
 		convBuffer(&element, m_singleElement, m_type, 1);
 	}
+	template<class Type>
+	void DSPFile::read(vector<Type>& vec) {
+		// Validate state of file
+		if (m_fs.is_open() == false) {
+			throw DSPException("Not opened");
+		}
 
+		if (m_readOnly == false) {
+			throw DSPException("Not opened for reading");
+		}
+
+		// Get current file pointer position
+		int recoff = (m_fs.tellg() - m_posBeginData) / m_elementSize;
+		if (recoff >= m_recLen * m_numRecords) {
+			throw DSPException("Read past end of data");
+		}
+
+		// Calculate elements to read until next record starts
+		recoff = m_recLen - (recoff % m_recLen);
+
+		// Allocate vector for data
+		vec.setLength(recoff);
+
+		if (m_type == convType(typeid(Type))) {
+			// Read data directly into vector buffer without conversion
+			m_fs.read((BYTE*)vec.m_data, sizeof(Type) * recoff);
+			if (m_fs.fail()) {
+				throw DSPException("Reading vector");
+			}
+		}
+		else
+		{
+			// Read data into temporary buffer then convert
+			BYTE* rowData = new BYTE[m_elementSize * recoff];
+			if (rowData == NULL) {
+				throw DSPMemoryException();
+			}
+
+			// Read Row in
+			m_fs.read(rowData, m_elementSize * recoff);
+			if (m_fs.fail()) {
+				delete[] rowData;
+				throw DSPException("Reading vector");
+			}
+
+			// Convert it to vector type
+			try {
+				convBuffer(vec.m_data, rowData, m_type, recoff);
+			}
+			catch (DSPException& e) {
+				delete[] rowData;
+				throw e;
+			}
+			delete[] rowData;
+		}
+	}
+	template<class Type>
+	void DSPFile::writeElement(const Type& element) {
+		// Validate state of file
+		if (m_fs.is_open() == false) {
+			throw DSPException("Not opened");
+		}
+	}
 }

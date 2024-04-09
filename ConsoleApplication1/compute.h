@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -165,6 +166,13 @@ namespace compute {
 		// read a single element from file
 		template<class Type>
 		void readElement(Type& element);
+		// read vector from file, converts from C DSP_FILE type
+		// to type of vector
+		template<class Type>
+		void read( vector<Type>& vec);
+		// WriteElement, write single element to file
+		template<class Type>
+		void writeElement(const Type& element);
 	};
 }
 
