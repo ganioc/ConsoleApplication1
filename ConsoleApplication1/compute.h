@@ -160,8 +160,11 @@ namespace compute {
 		//////////////////////////////
 		void getTrailer(string& str);
 		void setTrailer(const char* trailer);
+		// Place pointer at beginning of data
 		void seek(int len = 0, int rec = 0);
-
+		// read a single element from file
+		template<class Type>
+		void readElement(Type& element);
 	};
 }
 

@@ -215,6 +215,10 @@ namespace compute {
 		empty();
 	}
 
+	void DSPFile::seek(int len, int rec) {
+
+	}
+
 	void DSPFile::openRead(const char* name) {
 		// validate filename
 		if (name == NULL) {
@@ -307,4 +311,33 @@ namespace compute {
 		seek();
 		m_readOnly = true;
 	}
+
+	template<class Type>
+	void DSPFile::readElement(Type& element) {
+		// Validate state of file
+		if (m_fs.is_open() == false) {
+			throw DSPException("File not opened");
+		}
+		if (m_readOnly == false) {
+			throw DSPException("Not opened for reading");
+		}
+		if (m_recLen == 0 || m_numRecords == 0) {
+			throw DSPException("No data in file");
+		}
+		if (m_numRecords != 1) {
+			throw DSPException("File has more than one record");
+		}
+		if (m_type == UNKNOWN_TYPE) {
+			throw DSPException("Cannot read from unknown type");
+		}
+		// Read a single element
+		m_fs.read(m_singleElement, m_elementSize);
+		if (m_fs.fail()) {
+			throw DSPException("Failure reading next element");
+		}
+
+		// Convert it to type
+		convBuffer(&element, m_singleElement, m_type, 1);
+	}
+
 }
