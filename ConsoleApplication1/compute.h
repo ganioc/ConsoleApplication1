@@ -173,6 +173,8 @@ namespace compute {
 		// WriteElement, write single element to file
 		template<class Type>
 		void writeElement(const Type& element);
+		template <class Type>
+		void write(const vector<Type>& vec);
 	};
 }
 

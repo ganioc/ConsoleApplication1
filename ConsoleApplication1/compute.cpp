@@ -434,4 +434,45 @@ namespace compute {
 			throw DSPException("Writing single data element");
 		}
 	}
+
+	template <class Type>
+	void DSPFile::write(const vector<Type>& vec) {
+		// Validate state of file
+		if (m_fs.is_open() == false) {
+			throw DSPException("opened");
+		}
+
+		if (m_readOnly) {
+			throw DSPException("Not opened for writing");
+		}
+
+		// Validate input
+		if (vec.isEmpty()) {
+			throw DSPException("Writing empty vector");
+		}
+
+		DSPFILETYPE type = convType(typeid(Type));
+		if (m_numRecords == 0) {
+			// First data written to file
+			m_type = type;
+			m_elementSize = sizeof(Type);
+			m_numRecords = 0;
+			m_recLen = vec.length();
+		}
+		else {
+			// Data already written to file(check type and length)
+			if (m_type != type) {
+				throw DSPException("Vector of differnt type than file");
+			}
+			if (vec.length() != m_recLen) {
+				throw DSPException("Vector of different length");
+			}
+		}
+		// Write out data
+		m_fs.write((BYTE*)vec.m_data, sizeof(Type) * m_recLen);
+		if (m_fs.fail()) {
+			throw DSPException("Writing vector");
+		}
+		m_numRecords++;
+	}
 }
