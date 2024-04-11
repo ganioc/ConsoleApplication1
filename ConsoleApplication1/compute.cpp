@@ -401,5 +401,37 @@ namespace compute {
 		if (m_fs.is_open() == false) {
 			throw DSPException("Not opened");
 		}
+
+		if (m_readOnly) {
+			throw DSPException("Not opened for writing");
+		}
+
+		DSPFILETYPE dft = convType(typeid(Type));
+		if (dft == UNKNOWN_TYPE) {
+			throw DSPException("Writing unknown type");
+		}
+		else if (m_type == UNKNOWN_TYPE) {
+			// Set type to data coming in
+			m_type = dft;
+			m_elementSize = sizeof(Type);
+
+		}
+		else if (m_type != dft) {
+			throw DSPException("Can only write one type");
+		}
+
+		if (m_numRecords > 1) {
+			throw DSPException("Can only write to single record");
+		}
+
+		// We can only write vectors when using writeElement
+		m_numRecords = 1;
+
+		// Write single element
+		m_fs.write((BYTE*)&element, m_elementSize);
+
+		if (m_fs.fail()) {
+			throw DSPException("Writing single data element");
+		}
 	}
 }
