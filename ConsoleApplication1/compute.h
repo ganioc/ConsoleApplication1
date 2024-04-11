@@ -176,6 +176,8 @@ namespace compute {
 		template <class Type>
 		void write(const vector<Type>& vec);
 	};
+
+	void main();
 }
 
 

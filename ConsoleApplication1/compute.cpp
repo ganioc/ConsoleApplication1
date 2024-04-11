@@ -475,4 +475,11 @@ namespace compute {
 		}
 		m_numRecords++;
 	}
+
+	void main() {
+		cout << "Test DSPFile class\r\n";
+
+
+		cout << endl;
+	}
 }
