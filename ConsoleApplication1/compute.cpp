@@ -227,7 +227,8 @@ namespace compute {
 	}
 
 	void DSPFile::seek(int len, int rec) {
-
+		m_fs.clear();
+		m_fs.seekg(0);
 	}
 
 	void DSPFile::openRead(const char* name) {
