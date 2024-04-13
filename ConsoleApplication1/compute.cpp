@@ -41,7 +41,7 @@ namespace compute {
 	}
 
 	// class DSPFile
-	DSPFile::DSPFile() : m_type( UNKNOWN_TYPE),
+	DSPFile::DSPFile() : m_type(UNKNOWN_TYPE),
 		m_elementSize(0),
 		m_numRecords(0),
 		m_recLen(0),
@@ -85,6 +85,17 @@ namespace compute {
 		}
 		fs.close();
 		return true;
+	}
+
+	DSPFILETYPE DSPFile::convType(const type_info& type) {
+		if (typeid(unsigned char) == type) {
+			return UNSIGNED_CHAR;
+		}
+		if (typeid(short int) == type) {
+			return SIGNED_SHORT;
+		}
+
+		return UNKNOWN_TYPE;
 	}
 
 	//
@@ -202,7 +213,7 @@ namespace compute {
 			}
 			// Write out trailer
 			if (m_trailer != NULL) {
-				streampos posTrailer = m_elementSize *( m_numRecords * m_recLen);
+				streampos posTrailer = m_elementSize * (m_numRecords * m_recLen);
 				m_fs.seekp(posTrailer, ios::cur);
 				m_fs.write(m_trailer, strlen(m_trailer) + 1);
 				if (m_fs.fail()) {
@@ -447,29 +458,32 @@ namespace compute {
 		}
 
 		// Validate input
-		if (vec.isEmpty()) {
+		if (vec.empty()) {
 			throw DSPException("Writing empty vector");
 		}
 
 		DSPFILETYPE type = convType(typeid(Type));
+
 		if (m_numRecords == 0) {
 			// First data written to file
 			m_type = type;
 			m_elementSize = sizeof(Type);
 			m_numRecords = 0;
-			m_recLen = vec.length();
+			m_recLen = (int)vec.size();
 		}
 		else {
 			// Data already written to file(check type and length)
 			if (m_type != type) {
 				throw DSPException("Vector of differnt type than file");
 			}
-			if (vec.length() != m_recLen) {
+			if (vec.size() != m_recLen) {
 				throw DSPException("Vector of different length");
 			}
 		}
 		// Write out data
-		m_fs.write((BYTE*)vec.m_data, sizeof(Type) * m_recLen);
+		// m_fs.write((BYTE*)vec., sizeof(Type) * m_recLen);
+		m_fs.write(reinterpret_cast<const char*>(vec.data()), sizeof(Type) * m_recLen);
+
 		if (m_fs.fail()) {
 			throw DSPException("Writing vector");
 		}
@@ -478,8 +492,36 @@ namespace compute {
 
 	void main() {
 		cout << "Test DSPFile class\r\n";
+		try {
 
+			// File to open
+			DSPFile dspfile;
 
-		cout << endl;
+			// open file "output.dat" for writing
+			dspfile.openWrite("output.dat");
+
+			// Vector to write to the file
+			vector<short int> dataOut(1000);
+
+			// Fill vector with data
+			for (int i = 0; i < dataOut.size(); i++) {
+				dataOut[i] = i;
+			}
+
+			// write second recod record to file
+			dspfile.write(dataOut);
+
+			// close file
+			dspfile.close();
+
+			cout << "File \"output.data\" contains two records\n";
+			cout << endl;
+
+		}
+		catch (exception& e) {
+			// Display the 
+			cerr << e.what() << endl;
+		}
+
 	}
 }

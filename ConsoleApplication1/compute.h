@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <typeinfo>
 
 using namespace std;
 
@@ -81,7 +82,7 @@ namespace compute {
 
 	using BYTE = unsigned char ;
 	using DSPFILETYPE = unsigned char ;
-	const DSPFILETYPE	UNSIGNED_CHAR = 0;  // 0
+	const DSPFILETYPE		UNSIGNED_CHAR = 0;  // 0
 	const DSPFILETYPE		UNSIGNED_SHORT = 1; // 1
 	const DSPFILETYPE		UNSIGNED_LONG = 2;  // 2
 	const DSPFILETYPE		FLOAT = 3;          // 3
@@ -132,6 +133,8 @@ namespace compute {
 	public:
 		DSPFile();
 		~DSPFile();
+
+		DSPFILETYPE convType(const type_info& type);
 
 		/////////////////////
 		// File operations
