@@ -388,11 +388,14 @@ namespace compute {
 		recoff = m_recLen - (recoff % m_recLen);
 
 		// Allocate vector for data
-		vec.setLength(recoff);
+		vec.reserve(recoff);
 
 		if (m_type == convType(typeid(Type))) {
 			// Read data directly into vector buffer without conversion
-			m_fs.read((BYTE*)vec.m_data, sizeof(Type) * recoff);
+			// m_fs.read((BYTE*)vec.data(), sizeof(Type) * recoff);
+			// m_fs.write(reinterpret_cast<const char*>(vec.data()), sizeof(Type) * m_recLen);
+			m_fs.read(reinterpret_cast<char*>(vec.data()), sizeof(Type) * recoff);
+
 			if (m_fs.fail()) {
 				throw DSPException("Reading vector");
 			}
@@ -406,7 +409,7 @@ namespace compute {
 			}
 
 			// Read Row in
-			m_fs.read(rowData, m_elementSize * recoff);
+			m_fs.read(reinterpret_cast<char*>(rowData), m_elementSize * recoff);
 			if (m_fs.fail()) {
 				delete[] rowData;
 				throw DSPException("Reading vector");
@@ -414,7 +417,7 @@ namespace compute {
 
 			// Convert it to vector type
 			try {
-				convBuffer(vec.m_data, rowData, m_type, recoff);
+				convBuffer(vec.data(), rowData, m_type, recoff);
 			}
 			catch (DSPException& e) {
 				delete[] rowData;
@@ -530,7 +533,7 @@ namespace compute {
 
 			// change data in vector
 			for (int i = 0; i < dataOut.size(); i++) {
-				dataOut[i] = i;
+				dataOut[i] = i+1;
 			}
 
 			// write second record to file
@@ -548,5 +551,36 @@ namespace compute {
 			cerr << e.what() << endl;
 		}
 
+	}
+	void rdrcs() {
+		try {
+			// File to open
+			DSPFile dspfile;
+
+			// Declare vector variable to load
+			vector<short int> r1;
+			vector<short int> r2;
+
+			// open file "output.dat" for reading
+			dspfile.openRead("output.dat");
+			if (dspfile.getType() != SIGNED_SHORT) {
+				throw DSPException("Wrong data type in file");
+			}
+			else {
+				cout << "data file type OK\r\n";
+			}
+
+			// Read first and second records of file
+			dspfile.read(r1);
+			dspfile.read(r2);
+
+			// Verify length
+
+
+			dspfile.close();
+		}
+		catch (exception &e) {
+			cerr << e.what() << endl;
+		}
 	}
 }

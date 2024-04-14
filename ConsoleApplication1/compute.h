@@ -184,6 +184,8 @@ namespace compute {
 	};
 
 	void main();
+
+	void rdrcs();
 }
 
 
