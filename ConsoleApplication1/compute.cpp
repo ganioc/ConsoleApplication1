@@ -51,6 +51,8 @@ namespace compute {
 		m_singleElement(NULL) {
 
 	}
+
+	// DSPFile destructor
 	DSPFile::~DSPFile() {
 		close();
 		empty();
@@ -63,6 +65,11 @@ namespace compute {
 		m_readOnly = true;
 
 		if (m_singleElement != NULL) {
+			delete[] m_singleElement;
+			m_singleElement = NULL;
+		}
+
+		if (m_trailer != NULL) {
 			delete[] m_trailer;
 			m_trailer = NULL;
 		}
@@ -94,6 +101,7 @@ namespace compute {
 		if (typeid(short int) == type) {
 			return SIGNED_SHORT;
 		}
+		// ToDo: add more types
 
 		return UNKNOWN_TYPE;
 	}
@@ -150,7 +158,7 @@ namespace compute {
 			throw DSPException("Writing header");
 		}
 
-		// Begin data here
+		// Begin data here, tellp()Êä³öÁ÷
 		m_posBeginData = m_fs.tellp();
 
 		// File creation succeeded
@@ -169,12 +177,12 @@ namespace compute {
 				// seek to the end of data
 				m_fs.seekp(0L, ios::end);
 
-				// Get current position
+				// Get current position, correct computation
 				m_recLen = (int)((m_fs.tellp() - m_posBeginData) / m_elementSize);
 			}
 
 			// Seek to the beginning of the header
-			m_fs.seekp(0L, ios::end);
+			m_fs.seekp(0L, ios::beg);
 
 			// Update LONG_VECTOR when writing header
 			if (m_recLen > USHRT_MAX) {
@@ -199,7 +207,7 @@ namespace compute {
 				m_fs.write((const char*)&m_type, sizeof(m_type));
 				m_fs.write((const char*)&m_elementSize, sizeof(m_elementSize));
 
-				// Two unsigned shorts specify the number of recordsand the 
+				// Two unsigned shorts specify the number of records and the 
 				// record length
 				unsigned short s = m_numRecords;
 				m_fs.write((const char*)&s, sizeof(s));
@@ -213,7 +221,9 @@ namespace compute {
 			}
 			// Write out trailer
 			if (m_trailer != NULL) {
-				streampos posTrailer = m_elementSize * (m_numRecords * m_recLen);
+				// 
+				int pos = m_elementSize * (m_numRecords * m_recLen);
+				streampos posTrailer = (streampos)pos;
 				m_fs.seekp(posTrailer, ios::cur);
 				m_fs.write(m_trailer, strlen(m_trailer) + 1);
 				if (m_fs.fail()) {
@@ -225,12 +235,14 @@ namespace compute {
 		m_fs.close();
 		empty();
 	}
-
+	// Place pointer at beginning of data
 	void DSPFile::seek(int len, int rec) {
 		m_fs.clear();
-		m_fs.seekg(0);
+		m_fs.seekg(m_posBeginData, ios::beg);
 	}
 
+	// Open a file for reading
+	// When the file is opened, the header and trailer 
 	void DSPFile::openRead(const char* name) {
 		// validate filename
 		if (name == NULL) {
@@ -283,7 +295,8 @@ namespace compute {
 		streampos posEndTrailer = m_fs.tellg();
 
 		// Subtract data size to get trailer length
-		streamoff dataSize = m_elementSize * m_numRecords * m_recLen;
+		int sz = m_elementSize * m_numRecords * m_recLen;
+		streamoff dataSize = (streamoff)sz;
 
 		// Validate header
 		if (dataSize > posEndTrailer - m_posBeginData) {
@@ -336,6 +349,7 @@ namespace compute {
 		if (m_recLen == 0 || m_numRecords == 0) {
 			throw DSPException("No data in file");
 		}
+		// ? problems here
 		if (m_numRecords != 1) {
 			throw DSPException("File has more than one record");
 		}
@@ -351,6 +365,8 @@ namespace compute {
 		// Convert it to type
 		convBuffer(&element, m_singleElement, m_type, 1);
 	}
+
+	// Read vector from file. 
 	template<class Type>
 	void DSPFile::read(vector<Type>& vec) {
 		// Validate state of file
@@ -506,10 +522,18 @@ namespace compute {
 
 			// Fill vector with data
 			for (int i = 0; i < dataOut.size(); i++) {
+				dataOut[i] = abs(i-500);
+			}
+
+			// write first record to file
+			dspfile.write(dataOut);
+
+			// change data in vector
+			for (int i = 0; i < dataOut.size(); i++) {
 				dataOut[i] = i;
 			}
 
-			// write second recod record to file
+			// write second record to file
 			dspfile.write(dataOut);
 
 			// close file

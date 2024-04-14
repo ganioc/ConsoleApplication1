@@ -80,21 +80,22 @@ namespace compute {
 
 	void testGetInput();
 
-	using BYTE = unsigned char ;
+	using BYTE        = unsigned char ;
 	using DSPFILETYPE = unsigned char ;
-	const DSPFILETYPE		UNSIGNED_CHAR = 0;  // 0
-	const DSPFILETYPE		UNSIGNED_SHORT = 1; // 1
-	const DSPFILETYPE		UNSIGNED_LONG = 2;  // 2
-	const DSPFILETYPE		FLOAT = 3;          // 3
-	const DSPFILETYPE		SIGNED_CHAR = 4;    // 4
-	const DSPFILETYPE		SIGNED_SHORT = 5;   // 5
-	const DSPFILETYPE		SIGNED_LONG = 6;    // 6
-	const DSPFILETYPE		DOUBLE = 7;         // 7
-	const DSPFILETYPE		UNSIGNED_INT = 8;   // 8
-	const DSPFILETYPE		SIGNED_INT = 9;     // 9
-	const DSPFILETYPE		COMPLEX = 10;        // 10
-	const DSPFILETYPE		LONG_VECTOR = 128;
-	const DSPFILETYPE		UNKNOWN_TYPE = 0xFF;
+
+	const DSPFILETYPE		UNSIGNED_CHAR  = 0;    // 0
+	const DSPFILETYPE		UNSIGNED_SHORT = 1;    // 1
+	const DSPFILETYPE		UNSIGNED_LONG  = 2;    // 2
+	const DSPFILETYPE		FLOAT          = 3;    // 3
+	const DSPFILETYPE		SIGNED_CHAR    = 4;    // 4
+	const DSPFILETYPE		SIGNED_SHORT   = 5;    // 5
+	const DSPFILETYPE		SIGNED_LONG    = 6;    // 6
+	const DSPFILETYPE		DOUBLE         = 7;    // 7
+	const DSPFILETYPE		UNSIGNED_INT   = 8;    // 8
+	const DSPFILETYPE		SIGNED_INT     = 9;    // 9
+	const DSPFILETYPE		COMPLEX        = 10;   // 10
+	const DSPFILETYPE		LONG_VECTOR    = 128;
+	const DSPFILETYPE		UNKNOWN_TYPE   = 0xFF;
 
 	// DSPFile
 	class DSPFile {
@@ -134,6 +135,7 @@ namespace compute {
 		DSPFile();
 		~DSPFile();
 
+		// Get record type 
 		DSPFILETYPE convType(const type_info& type);
 
 		/////////////////////
@@ -164,6 +166,7 @@ namespace compute {
 		//////////////////////////////
 		void getTrailer(string& str);
 		void setTrailer(const char* trailer);
+
 		// Place pointer at beginning of data
 		void seek(int len = 0, int rec = 0);
 		// read a single element from file
