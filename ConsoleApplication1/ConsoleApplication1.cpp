@@ -27,7 +27,7 @@ int main()
     tutorial::testFunction();
 
     // compute::testGetInput();
-    // compute::main();
+    // compute::wrrecs();
     compute::rdrcs();
 
     return 0;

@@ -366,9 +366,21 @@ namespace compute {
 		convBuffer(&element, m_singleElement, m_type, 1);
 	}
 
+	template<class Type>
+	void DSPFile::convBuffer(
+			vector<Type>& vec, 
+			BYTE* rowData, 
+			DSPFILETYPE type, 
+			int numEle) {
+		// put row Data into the vector
+		copy(&rowData[0], &rowData[numEle], back_inserter(vec));
+	}
+
 	// Read vector from file. 
 	template<class Type>
 	void DSPFile::read(vector<Type>& vec) {
+		int lenTemp;
+
 		// Validate state of file
 		if (m_fs.is_open() == false) {
 			throw DSPException("Not opened");
@@ -388,13 +400,24 @@ namespace compute {
 		recoff = m_recLen - (recoff % m_recLen);
 
 		// Allocate vector for data
-		vec.reserve(recoff);
+		/*cout << "recoff: " << recoff << endl;*/
+
+		// resize the vector, not as reserve()
+		vec.resize(recoff);
+
+	/*	int lenType =  sizeof(Type);*/
 
 		if (m_type == convType(typeid(Type))) {
 			// Read data directly into vector buffer without conversion
 			// m_fs.read((BYTE*)vec.data(), sizeof(Type) * recoff);
-			// m_fs.write(reinterpret_cast<const char*>(vec.data()), sizeof(Type) * m_recLen);
-			m_fs.read(reinterpret_cast<char*>(vec.data()), sizeof(Type) * recoff);
+			// m_fs.read(reinterpret_cast<char*>(vec.data()), sizeof(Type) * m_recLen);
+			 m_fs.read((char*)(&vec[0]), sizeof(Type) * recoff);
+			// How to read from fstream into a vector?
+
+
+
+			//cout << "print out vec:\n";
+			//cout << vec[0] << ", " << vec[1] << " ," << vec[2];
 
 			if (m_fs.fail()) {
 				throw DSPException("Reading vector");
@@ -403,13 +426,14 @@ namespace compute {
 		else
 		{
 			// Read data into temporary buffer then convert
-			BYTE* rowData = new BYTE[m_elementSize * recoff];
+			lenTemp = m_elementSize * recoff;
+			BYTE* rowData = new BYTE[lenTemp];
 			if (rowData == NULL) {
 				throw DSPMemoryException();
 			}
 
 			// Read Row in
-			m_fs.read(reinterpret_cast<char*>(rowData), m_elementSize * recoff);
+			m_fs.read(reinterpret_cast<char*>(rowData), lenTemp);
 			if (m_fs.fail()) {
 				delete[] rowData;
 				throw DSPException("Reading vector");
@@ -417,7 +441,7 @@ namespace compute {
 
 			// Convert it to vector type
 			try {
-				convBuffer(vec.data(), rowData, m_type, recoff);
+				this->convBuffer(vec, rowData, m_type, recoff);
 			}
 			catch (DSPException& e) {
 				delete[] rowData;
@@ -510,7 +534,7 @@ namespace compute {
 		m_numRecords++;
 	}
 
-	void main() {
+	void wrrecs() {
 		cout << "Test DSPFile class\r\n";
 		try {
 
@@ -575,7 +599,24 @@ namespace compute {
 			dspfile.read(r2);
 
 			// Verify length
+			cout << "\nr1 length: " << r1.size() << "\n";
+			for (int i = 0; i < 10; i++) {
+				cout << r1[i] << ", ";
+			}
+			cout << "\n";
 
+			cout << "r2 length: " << r2.size() << "\n";
+			for (int i = 0; i < 10; i++) {
+				cout << r2[i] << ", ";
+			}
+			cout << "\n";
+
+
+			cout << endl;
+
+			if (r1.size() != 1000 || r2.size() != 1000) {
+				throw DSPException("Wrong record length in data file");
+			}
 
 			dspfile.close();
 		}

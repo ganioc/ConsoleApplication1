@@ -181,6 +181,8 @@ namespace compute {
 		void writeElement(const Type& element);
 		template <class Type>
 		void write(const vector<Type>& vec);
+		template<class Type>
+		void convBuffer(vector<Type>&vec, BYTE* rowData, DSPFILETYPE type, int len);
 	};
 
 	void main();
