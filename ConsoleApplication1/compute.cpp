@@ -619,6 +619,8 @@ namespace compute {
 			}
 
 			dspfile.close();
+
+			cout << "Read two records from file \"output.dat\"\n";
 		}
 		catch (exception &e) {
 			cerr << e.what() << endl;
