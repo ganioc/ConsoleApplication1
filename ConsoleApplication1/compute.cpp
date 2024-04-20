@@ -368,10 +368,10 @@ namespace compute {
 
 	template<class Type>
 	void DSPFile::convBuffer(
-			vector<Type>& vec, 
-			BYTE* rowData, 
-			DSPFILETYPE type, 
-			int numEle) {
+		vector<Type>& vec,
+		BYTE* rowData,
+		DSPFILETYPE type,
+		int numEle) {
 		// put row Data into the vector
 		copy(&rowData[0], &rowData[numEle], back_inserter(vec));
 	}
@@ -405,13 +405,13 @@ namespace compute {
 		// resize the vector, not as reserve()
 		vec.resize(recoff);
 
-	/*	int lenType =  sizeof(Type);*/
+		/*	int lenType =  sizeof(Type);*/
 
 		if (m_type == convType(typeid(Type))) {
 			// Read data directly into vector buffer without conversion
 			// m_fs.read((BYTE*)vec.data(), sizeof(Type) * recoff);
 			// m_fs.read(reinterpret_cast<char*>(vec.data()), sizeof(Type) * m_recLen);
-			 m_fs.read((char*)(&vec[0]), sizeof(Type) * recoff);
+			m_fs.read((char*)(&vec[0]), sizeof(Type) * recoff);
 			// How to read from fstream into a vector?
 
 
@@ -534,6 +534,40 @@ namespace compute {
 		m_numRecords++;
 	}
 
+	void DSPFile::getTrailer(string& str) {
+		str.clear();
+		if (m_fs.is_open() == false) {
+			throw DSPException("Not opened");
+		}
+		if (m_readOnly == false) {
+			throw DSPException("Not opened for reading");
+		}
+
+		str = m_trailer;
+	}
+
+	void DSPFile::setTrailer(const char* trailer) {
+		if (m_fs.is_open() == false) {
+			throw DSPException("Not opened");
+		}
+		if (m_readOnly == true) {
+			throw DSPException("Not opened for writing");
+		}
+		if (m_trailer != NULL) {
+			delete[] m_trailer;
+			m_trailer = NULL;
+		}
+		if (trailer != NULL) {
+			// Allocate new trailer
+			m_trailer = new char[strlen(trailer) + 1];
+			if (m_trailer == NULL) {
+				throw DSPMemoryException();
+			}
+			// Copy trailer
+			strcpy(m_trailer, trailer);
+		}
+	}
+
 	void wrrecs() {
 		cout << "Test DSPFile class\r\n";
 		try {
@@ -549,7 +583,7 @@ namespace compute {
 
 			// Fill vector with data
 			for (int i = 0; i < dataOut.size(); i++) {
-				dataOut[i] = abs(i-500);
+				dataOut[i] = abs(i - 500);
 			}
 
 			// write first record to file
@@ -557,7 +591,7 @@ namespace compute {
 
 			// change data in vector
 			for (int i = 0; i < dataOut.size(); i++) {
-				dataOut[i] = i+1;
+				dataOut[i] = i + 1;
 			}
 
 			// write second record to file
@@ -576,7 +610,7 @@ namespace compute {
 		}
 
 	}
-	void rdrcs() {
+	void rdrecs() {
 		try {
 			// File to open
 			DSPFile dspfile;
@@ -621,6 +655,112 @@ namespace compute {
 			dspfile.close();
 
 			cout << "Read two records from file \"output.dat\"\n";
+		}
+		catch (exception& e) {
+			cerr << e.what() << endl;
+		}
+	}
+	void rdfrec() {
+		try {
+			DSPFile dspfile;
+			string strName;
+
+			// Get parameters from user
+			do {
+				getInput("Enter file name:", strName);
+			} while (strName.empty());
+
+			// Declar float vector to red
+			vector<float> floatVec;
+			// Open file for reading
+			dspfile.openRead(strName.c_str());
+
+			// Not that this file doesn't contain floats
+			if (dspfile.getType() != FLOAT) {
+				cout << "File \""
+					<< strName
+					<< "\" doesn't contain float data.\n";
+			}
+			// Read first record of file as a float vector
+			// The read() member function converts the data to float
+			dspfile.read(floatVec);
+
+			// close file
+			dspfile.close();
+
+			// Display data in a column
+			cout.flags(ios::showpoint);
+			for (int i = 0; i < floatVec.size(); i++) {
+				cout << i << " " << floatVec[i] << endl;
+			}
+		}
+		catch (exception& e) {
+			cerr << e.what() << endl;
+		}
+	}
+	void rdtrail() {
+		try {
+			DSPFile dspfile;
+			string strName;
+			string strTrailer;
+
+			do {
+				getInput("Enter file name:", strName);
+			} while (strName.empty());
+
+			dspfile.openRead(strName.c_str());
+
+			dspfile.getTrailer(strTrailer);
+
+			dspfile.close();
+
+			if (strTrailer.empty()) {
+				cout << "No trailer in file \"" << strName << "\"\n";
+			}
+			else {
+				cout << "Trailer:\n" << strTrailer << endl;
+			}
+		}
+		catch (exception& e) {
+			cerr << e.what() << endl;
+		}
+	}
+	void wrtrail() {
+		try {
+			DSPFile dspfile;
+			string strTrailer;
+
+			dspfile.openWrite("output1.dat");
+
+			vector<short int>dataOut(1000);
+
+			// Fill vector with data
+			for (int i = 0; i < dataOut.size(); i++) {
+				dataOut[i] = abs(i - 500);
+			}
+
+			// Write first record to file
+			dspfile.write(dataOut);
+
+			// Change data in vector
+			for (int i = 0; i < dataOut.size(); i++) {
+				dataOut[i] = i;
+			}
+
+			// Write second record to file
+			dspfile.write(dataOut);
+
+			// create trailer
+			strTrailer = "File \"output1.dat\" contains two records:\n";
+			strTrailer += "First record is an inverted triangle\n";
+			strTrailer += "Second record is a ramp\n";
+			cout << strTrailer;
+
+			// Set files trailer
+			dspfile.setTrailer(strTrailer.c_str());
+
+			// close file
+			dspfile.close();
 		}
 		catch (exception &e) {
 			cerr << e.what() << endl;

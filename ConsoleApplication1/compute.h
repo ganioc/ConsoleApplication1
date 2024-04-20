@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 #include <typeinfo>
+#include <complex>
 
 using namespace std;
 
@@ -185,9 +186,73 @@ namespace compute {
 		void convBuffer(vector<Type>&vec, BYTE* rowData, DSPFILETYPE type, int len);
 	};
 
-	void main();
+	// convBuffer( Type *pto, void *pfrom, DSPFILETYPE dft, int len)
+	//	Converts buffer from C DSP_FILE type to generic Type.
+	//
+	// Use inline helper function CONV to copy
+	// and cast from on type to another
+	//
+	// Throws: DSPException
+	template<class TypeTo, class TypeFrom>
+	inline void CONV(TypeTo* pto, TypeFrom* pfrom, int len) {
+		while (len--) {
+			*pto++ = (TypeTo)*pfrom++;
+		}
+	}
+	template <class Type>
+	void convBuffer(Type* pto, void* pfrom, DSPFILETYPE dft, int len) {
+		if (pto == NULL || pfrom == NULL || len <= 0) {
+			throw DSPException("convBuffer received no data");
+		}
+		switch (dft) {
+			// C DSP_FILE types
+		case UNSIGNED_CHAR:
+			CONV(pto, (unsigned char*)pfrom, len);
+			break;
+		case UNSIGNED_SHORT:
+			CONV(pto, (unsigned short*)pfrom, len);
+			break;
+		case UNSIGNED_LONG:
+			CONV(pto, (unsigned long*)pfrom, len);
+			break;
+		case FLOAT:
+			CONV(pto, (float*)pfrom, len);
+			break;
+		case SIGNED_CHAR:
+			CONV(pto, (signed char*)pfrom, len);
+			break;
+		case SIGNED_SHORT:
+			CONV(pto, (signed short*)pfrom, len);
+			break;
+		case SIGNED_LONG:
+			CONV(pto, (signed long*)pfrom, len);
+			break;
+		case DOUBLE:
+			CONV(pto, (double *)pfrom, len);
+			break;
+		case UNSIGNED_INT:
+			CONV(pto, (unsigned int*)pfrom, len);
+			break;
+		case SIGNED_INT:
+			CONV(pto, (signed int*)pfrom, len);
+			break;
+		case COMPLEX:
+			CONV(pto, (complex<float> *)pfrom, len);
+			break;
+		default:
+			throw DSPException("convBuffer of unknown type");
+		}
+	}
 
-	void rdrcs();
+	// Write a file output.dat
+	void wrrecs();
+	// Read from output.dat
+	void rdrecs();
+	// read from what ever format into a float array
+	// vector<float> floatVec;
+	void rdfrec();
+	void rdtrail();
+	void wrtrail();
 }
 
 

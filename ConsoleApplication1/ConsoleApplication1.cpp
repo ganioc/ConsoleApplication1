@@ -28,7 +28,9 @@ int main()
 
     // compute::testGetInput();
     // compute::wrrecs();
-    compute::rdrcs();
+    // compute::rdrecs();
+    // compute::wrtrail();
+    compute::rdtrail();
 
     return 0;
 }
