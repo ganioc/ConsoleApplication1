@@ -75,6 +75,12 @@ tellp(), // 对输出流操作
 ```
 
 ## Graphic Display of Data
+Basic wave generation is OK. Will use matlab, or python matplot lib to draw the waveform.
+
+## Chap4 Filtering Routines
+
+
+
 
 
 
