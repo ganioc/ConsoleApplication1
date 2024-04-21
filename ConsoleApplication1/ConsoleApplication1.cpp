@@ -30,8 +30,12 @@ int main()
     // compute::wrrecs();
     // compute::rdrecs();
     // compute::wrtrail();
-    compute::rdtrail();
+    // compute::rdtrail();
 
+    //cout << "Test make wave\n";
+    //compute::mkwave();
+    cout << "Test read make wave\n";
+    compute::rdtrail();
     return 0;
 }
 

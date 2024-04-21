@@ -102,6 +102,9 @@ namespace compute {
 			return SIGNED_SHORT;
 		}
 		// ToDo: add more types
+		if (typeid(float) == type) {
+			return FLOAT;
+		}
 
 		return UNKNOWN_TYPE;
 	}
@@ -763,6 +766,80 @@ namespace compute {
 			dspfile.close();
 		}
 		catch (exception &e) {
+			cerr << e.what() << endl;
+		}
+	}
+	void makeWave(vector<float>& vecWave, const vector<float>& vecFreq) {
+		const double TWO_PI = 8.0 * atan(1.0);
+
+		// For each frequency
+		for (int i = 0; i < vecFreq.size(); i++) {
+			// Add the sinusoid to the waveform
+			double arg = TWO_PI * vecFreq[i];
+			for (int j = 0; j < vecWave.size(); j++) {
+				vecWave[j] += (float)cos(j * arg);
+			}
+		}
+		// Normalize amplitude by the number of frequencies
+		for (int i = 0; i < vecWave.size(); i++) {
+			vecWave[i] /= vecFreq.size();
+		}
+	}
+	void mkwave() {
+		try {
+			int samples = 0;
+			getInput("Enter number of samples", samples, 2, 10000);
+
+			vector<float> vecWave(samples);
+			vecWave = { 0.0f };
+
+			int freqs = 0;
+			getInput("Enter number of frequencies", freqs, 1, 20);
+
+			vector<float> vecFreqs(freqs);
+			for (int i = 0; i < freqs; i++) {
+				char format[80] = { 0 };
+				sprintf(format, "Frequency %d", i);
+				getInput(format, vecFreqs[i], 0.0f, 0.5f);
+			}
+
+			makeWave(vecWave, vecFreqs);
+
+			// Get filename
+			string strName;
+			do {
+				getInput("Enter file name to create", strName);
+			} while (strName.empty());
+
+			// Open file for writing
+			DSPFile dspfile;
+			dspfile.openWrite(strName.c_str());
+
+			// Store data in DSPFile
+			dspfile.write(vecWave);
+
+			// Write trailer
+			static char buf[300];
+			sprintf(buf,
+				"\nSignal of length %d equal to the sum of %d\n"
+				"cosine waves at the following frequencies:\n",
+				vecWave.size(),
+				vecFreqs.size());
+			string str = buf;
+			for (int i = 0; i < vecFreqs.size(); i++) {
+				sprintf(buf, "f/fs = %f\n", vecFreqs[i]);
+				str += buf;
+			}
+
+			// Write trailer to display
+			cout << str;
+
+			// Add trailer to file
+			dspfile.setTrailer(str.c_str());
+
+			dspfile.close();
+		}
+		catch (exception& e) {
 			cerr << e.what() << endl;
 		}
 	}

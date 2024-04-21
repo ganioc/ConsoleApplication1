@@ -253,6 +253,9 @@ namespace compute {
 	void rdfrec();
 	void rdtrail();
 	void wrtrail();
+	void makeWave(vector<float>& vecWave, const vector<float>& vecFreq);
+	// Generate waveform
+	void mkwave();
 }
 
 
