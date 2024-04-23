@@ -78,6 +78,12 @@ tellp(), // 对输出流操作
 Basic wave generation is OK. Will use matlab, or python matplot lib to draw the waveform.
 
 ## Chap4 Filtering Routines
+Nth order filter, FIR filters, 一个冲激，输入信号，不会在最后一个响应后的N个采样之后产生影响。
+IIR filters, Infinite Impulse Response, 
+
+
+
+
 
 
 

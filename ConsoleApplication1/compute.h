@@ -256,6 +256,17 @@ namespace compute {
 	void makeWave(vector<float>& vecWave, const vector<float>& vecFreq);
 	// Generate waveform
 	void mkwave();
+
+
+	///////////////////////////////
+	// Class Filter
+	///////////////////////////////
+	template <class Type>
+	class Filter {
+	public:
+		// Constructor
+
+	};
 }
 
 
